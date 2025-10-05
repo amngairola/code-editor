@@ -31,7 +31,7 @@ const Footer = () => {
               aria-label="LinkedIn Profile" // Accessibility
             >
               <img
-                src={assets.icon_linkedin}
+                src={assets.linkedin_icon}
                 alt="LinkedIn"
                 className="w-6 h-6"
               />
