@@ -6,7 +6,6 @@ const Footer = () => {
   return (
     <footer className="bg-gray-800 p-6 text-gray-300 text-center text-sm">
       <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-        {/* Copyright or Brand Info */}
         <p>
           &copy; {new Date().getFullYear()} Code Share. All rights reserved.
         </p>
