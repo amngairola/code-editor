@@ -1,7 +1,7 @@
 import React from "react";
 
-import icon_github from "../assets/assets.js";
-import icon_linkedin from "../assets/assets.js";
+import assets from "./../assets/assets";
+
 const Footer = () => {
   return (
     <footer className="bg-gray-800 p-6 text-gray-300 text-center text-sm">
@@ -22,7 +22,7 @@ const Footer = () => {
               className="hover:opacity-75 transition-opacity duration-200"
               aria-label="GitHub Profile" // Accessibility
             >
-              <img src={icon_github} alt="GitHub" className="w-6 h-6" />
+              <img src={assets.icon_github} alt="GitHub" className="w-6 h-6" />
             </a>
             <a
               href="https://www.linkedin.com/in/amngairola"
@@ -31,7 +31,11 @@ const Footer = () => {
               className="hover:opacity-75 transition-opacity duration-200"
               aria-label="LinkedIn Profile" // Accessibility
             >
-              <img src={icon_linkedin} alt="LinkedIn" className="w-6 h-6" />
+              <img
+                src={assets.icon_linkedin}
+                alt="LinkedIn"
+                className="w-6 h-6"
+              />
             </a>
           </div>
         </div>
