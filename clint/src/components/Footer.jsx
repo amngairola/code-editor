@@ -1,6 +1,7 @@
 import React from "react";
 
-import { icon_github, icon_linkedin } from "../assets/assets.js";
+import icon_github from "../assets/assets.js";
+import icon_linkedin from "../assets/assets.js";
 const Footer = () => {
   return (
     <footer className="bg-gray-800 p-6 text-gray-300 text-center text-sm">
