@@ -3,7 +3,7 @@ import { toast } from "react-toastify";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 
-// Import your custom components
+// Import custom components
 import Client from "../components/Client";
 import Editor from "../components/Editor";
 import OutputConsole from "../components/OutputConsole";
@@ -15,7 +15,9 @@ import { python } from "@codemirror/lang-python";
 
 // Import icons for the UI
 import { VscEdit, VscDebugRestart, VscPlay, VscSync } from "react-icons/vsc";
+import axios from "axios";
 
+// default code snippet for languages
 const defaultCodeSnippets = {
   javascript: 'console.log("Hello, World!");',
   python: 'def hello_world():\n    print("Hello, World!")',
@@ -37,7 +39,7 @@ const EditorPage = () => {
   const [loading, setLoading] = useState(false);
   const [langExtension, setLangExtension] = useState(javascript({ jsx: true }));
 
-  // This main useEffect handles all socket event listeners
+  // This  useEffect handles all socket event listeners
   useEffect(() => {
     if (!socket) return;
 
@@ -169,33 +171,49 @@ const EditorPage = () => {
     toast.info(`Code reset to default for ${language}.`);
   };
 
+  // handle run method
+  axios.defaults.baseURL = import.meta.env.VITE_REACT_APP_BACKEND_URL;
+
   const handleRun = async () => {
     setLoading(true);
-    const initialOutput = `Executing ${language} code...`;
+
+    const initialOutput = `Executing... `;
     setOutput(initialOutput);
+
     // Broadcast the "Executing..." message to all users
+
     if (socket) {
       socket.emit("output-change", { roomId, output: initialOutput });
     }
 
-    // This is where you would make your API call to Gemini or another execution service
     try {
-      // Simulating a network delay for an API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      const newOutput = `Simulated output for ${language}:\nHello from the execution engine! Your code ran successfully at ${new Date().toLocaleTimeString()}.`;
+      // The API call
 
-      setOutput(newOutput); // Update local state with final result
+      const { data } = await axios.post(`/api/run`, {
+        language,
+        code,
+      });
+
+      const finalOutput = data.output || "No output from AI.";
+      setOutput(finalOutput);
 
       // Broadcast the final result to all users
       if (socket) {
-        socket.emit("output-change", { roomId, output: newOutput });
+        socket.emit("output-change", { roomId, output: finalOutput });
       }
     } catch (error) {
-      const errorOutput = `Error executing code: ${error.message}`;
-      setOutput(errorOutput);
-      // Broadcast the error message
+      console.error("Error executing code:", error);
+
+      const errorMsg =
+        error.response?.data?.error || // Check for backend-sent error
+        error.message || // Fallback to generic network error
+        "An unexpected error occurred.";
+
+      setOutput(errorMsg); // Update local state with the error
+
+      // Broadcast the specific error message to all users
       if (socket) {
-        socket.emit("output-change", { roomId, output: errorOutput });
+        socket.emit("output-change", { roomId, output: errorMsg });
       }
     } finally {
       setLoading(false);

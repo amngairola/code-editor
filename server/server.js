@@ -3,6 +3,7 @@ import cors from "cors";
 import "dotenv/config";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import runRoutes from "./Route/runRoutes.js";
 
 const app = express();
 
@@ -10,6 +11,8 @@ app.use(cors());
 app.use(express.json());
 
 const server = createServer(app);
+// --- API ROUTE ---
+app.use("/api", runRoutes);
 
 const io = new Server(server, {
   cors: {
@@ -95,7 +98,7 @@ io.on("connection", (socket) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
   console.log(`Server is running and listening on http://localhost:${PORT}`);
 });
