@@ -32,7 +32,7 @@ export const runCode = async (req, res) => {
       output: text.trim(),
     });
   } catch (error) {
-    console.error("Error executing code with Gemini:", error);
+    console.error("Error executing code", error);
 
     res.status(500).json({ error: "Failed to execute code." });
   }

@@ -20,7 +20,7 @@ import axios from "axios";
 // default code snippet for languages
 const defaultCodeSnippets = {
   javascript: 'console.log("Hello, World!");',
-  python: 'def hello_world():\n    print("Hello, World!")',
+  python: 'print("Hello, World!")',
   java: 'public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
 };
 
@@ -132,9 +132,9 @@ const EditorPage = () => {
   const copyId = async () => {
     try {
       await navigator.clipboard.writeText(roomId);
-      toast.success("Room ID has been copied to clipboard!");
+      toast.success("copied ");
     } catch (err) {
-      toast.error("Failed to copy Room ID.");
+      toast.error("Failed to copy ");
       console.error(err);
     }
   };
@@ -194,7 +194,7 @@ const EditorPage = () => {
         code,
       });
 
-      const finalOutput = data.output || "No output from AI.";
+      const finalOutput = data.output || "No output";
       setOutput(finalOutput);
 
       // Broadcast the final result to all users
