@@ -1,14 +1,21 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  Suspense,
+  lazy,
+  useMemo,
+} from "react";
 import { toast } from "react-toastify";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 
 // Import custom components
 import Client from "../components/Client";
-import Editor from "../components/Editor";
+
 import OutputConsole from "../components/OutputConsole";
 
-// Import CodeMirror language packages
+// // Import CodeMirror language packages
 import { javascript } from "@codemirror/lang-javascript";
 import { java } from "@codemirror/lang-java";
 import { python } from "@codemirror/lang-python";
@@ -16,6 +23,14 @@ import { python } from "@codemirror/lang-python";
 // Import icons for the UI
 import { VscEdit, VscDebugRestart, VscPlay, VscSync } from "react-icons/vsc";
 import axios from "axios";
+const LeftSIdeBar = lazy(() =>
+  import("../components/ParentComponents/LeftSIdeBar")
+);
+
+import LeftSideBarSkeleton from "../components/LeftSideBarSkeleton";
+
+const CodeEditor = lazy(() => import("../components/CodeEditor"));
+import CodeEditorSkeleton from "../components/CodeEditorSkeleto";
 
 // default code snippet for languages
 const defaultCodeSnippets = {
@@ -26,18 +41,21 @@ const defaultCodeSnippets = {
 
 const EditorPage = () => {
   const socket = useSocket();
-  const codeRef = useRef(null);
+  const codeRef = useRef(defaultCodeSnippets.javascript);
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+  const editorInstanceRef = useRef(null);
 
   // State for UI and application logic
   const [clients, setClients] = useState([]);
   const [language, setLanguage] = useState("javascript");
-  const [code, setCode] = useState(defaultCodeSnippets.javascript);
+  // const [code, setCode] = useState(defaultCodeSnippets.javascript);
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [langExtension, setLangExtension] = useState(javascript({ jsx: true }));
+
+  const isRemoteUpdate = useRef(false);
 
   // This  useEffect handles all socket event listeners
   useEffect(() => {
@@ -76,21 +94,29 @@ const EditorPage = () => {
     const handleCodeUpdate = ({ code: serverCode }) => {
       // Update code only if it's different to prevent loops
       if (serverCode !== null && serverCode !== codeRef.current) {
-        setCode(serverCode);
+        codeRef.current = serverCode;
+
+        if (editorInstanceRef.current) {
+          const pos = editorInstanceRef.current.getPosition();
+          editorInstanceRef.current.setValue(serverCode);
+          editorInstanceRef.current.setPosition(pos);
+        }
       }
     };
     socket.on("code-update", handleCodeUpdate);
 
     // 4. Listen for output console updates from other users
     const handleOutputUpdate = ({ output: serverOutput }) => {
+      isRemoteUpdate.current = true;
       if (serverOutput !== null) {
         setOutput(serverOutput);
       }
+      isRemoteUpdate.current = false;
     };
     socket.on("output-update", handleOutputUpdate);
 
     // --- CLEANUP ---
-    // This function runs when the component unmounts to prevent memory leaks
+
     return () => {
       socket.off("joined", handleJoined);
       socket.off("disconnected", handleDisconnected);
@@ -99,16 +125,15 @@ const EditorPage = () => {
     };
   }, [socket, roomId, location.state, navigate]);
 
-  // Effect to keep codeRef updated with the latest code state
-  useEffect(() => {
-    codeRef.current = code;
-  }, [code]);
-
   // Effect to update editor settings when the language dropdown changes
   useEffect(() => {
     const newCode = defaultCodeSnippets[language] || "";
-    setCode(newCode); // Set the default code for the new language
-    setOutput(""); // Clear the output console
+    codeRef.current = newCode; // Set the default code for the new language
+    setOutput("");
+
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.setValue(newCode);
+    }
 
     // Switch the CodeMirror language extension for syntax highlighting
     switch (language) {
@@ -129,24 +154,9 @@ const EditorPage = () => {
 
   // --- EVENT HANDLERS ---
 
-  const copyId = async () => {
-    try {
-      await navigator.clipboard.writeText(roomId);
-      toast.success("copied ");
-    } catch (err) {
-      toast.error("Failed to copy ");
-      console.error(err);
-    }
-  };
-
-  const handleLeaveRoom = () => {
-    toast.info("You have left the room.");
-    navigate("/");
-  };
-
   const handleCodeChange = (newCode) => {
-    setCode(newCode);
-    if (socket) {
+    codeRef.current = newCode;
+    if (!isRemoteUpdate.current && socket) {
       // Emit the code change to the server
       socket.emit("code-change", { roomId, code: newCode });
     }
@@ -163,7 +173,12 @@ const EditorPage = () => {
 
   const handleReset = () => {
     const defaultCode = defaultCodeSnippets[language];
-    setCode(defaultCode);
+    codeRef.current = defaultCode;
+
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.setValue(defaultCode);
+    }
+
     // Broadcast the reset code to other users
     if (socket) {
       socket.emit("code-change", { roomId, code: defaultCode });
@@ -186,6 +201,7 @@ const EditorPage = () => {
       socket.emit("output-change", { roomId, output: initialOutput });
     }
 
+    const code = codeRef.current;
     try {
       // The API call
 
@@ -219,113 +235,96 @@ const EditorPage = () => {
       setLoading(false);
     }
   };
-
+  const memoizedClients = useMemo(() => clients, [clients]);
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col">
-      <div className="flex-grow flex">
-        {/* Left Sidebar */}
-        <div className="w-64 bg-gray-800 p-4 flex flex-col justify-between border-r border-gray-700">
-          <div>
-            <h4 className="text-xl font-bold mb-4 text-gray-100">Room ID:</h4>
-            <div className="bg-gray-700 text-gray-300 p-2 rounded-md text-center text-lg font-mono break-all mb-4">
-              {roomId}
-            </div>
-            <h4 className="text-xl font-bold mb-4 text-gray-100 mt-6">
-              Collaborators
-            </h4>
-            <div className="grid grid-cols-2 gap-4">
-              {clients.map((client) => (
-                <Client
-                  key={client.socketId}
-                  socketId={client.socketId}
-                  userName={client.userName}
-                />
-              ))}
-            </div>
-          </div>
+    <div className="min-h-screen bg-[#09090b] text-zinc-200 flex flex-col font-sans antialiased selection:bg-indigo-500/30">
+      <div className="flex-grow flex overflow-hidden">
+        {/* Left Sidebar Layout Frame */}
+        <Suspense fallback={<LeftSideBarSkeleton />}>
+          <LeftSIdeBar
+            clients={memoizedClients}
+            language={language}
+            setLanguage={setLanguage}
+          />
+        </Suspense>
 
-          <div className="mt-auto">
-            <label
-              htmlFor="language-select"
-              className="block text-sm font-medium text-gray-300 mb-2"
-            >
-              Language:
-            </label>
-            <select
-              id="language-select"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-white text-sm"
-            >
-              <option value="javascript">JavaScript</option>
-              <option value="python">Python</option>
-              <option value="java">Java</option>
-            </select>
-            <div className="mt-8">
-              <button
-                onClick={copyId}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 mb-3"
-              >
-                Copy Room ID
-              </button>
-              <button
-                onClick={handleLeaveRoom}
-                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
-              >
-                Leave Room
-              </button>
+        {/* Right Side: Editor Workspace Canvas Area */}
+        <div className="flex-grow bg-[#09090b] p-6 flex flex-col min-w-0 overflow-y-auto">
+          {/* Workspace Toolbar Header Panel */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-zinc-800/80">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-lg shadow-black/20">
+                <VscEdit className="text-indigo-400 text-lg" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-zinc-100 tracking-tight flex items-center gap-2">
+                  Code Editor
+                </h2>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mt-0.5">
+                  Environment /{" "}
+                  <span className="text-indigo-400 font-mono lower-case">
+                    {language}
+                  </span>
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* Right Side: Editor Area */}
-        <div className="flex-grow bg-gray-900 p-4 flex flex-col">
-          <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
-            <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
-              <VscEdit className="text-purple-400 text-xl" />
-              Code Editor (<span className="text-blue-400">{language}</span>)
-            </h2>
-            <div className="flex gap-3 items-center">
+            {/* Interactive Runtime Controls */}
+            <div className="flex gap-3 items-center w-full sm:w-auto">
               <button
                 onClick={handleReset}
-                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium rounded-md transition-colors duration-200 flex items-center gap-1"
+                className="flex-1 sm:flex-initial px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold text-sm rounded-xl border border-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
                 title={`Reset ${language} code to default`}
               >
-                <VscDebugRestart className="text-lg" />
+                <VscDebugRestart className="text-base text-zinc-400 group-hover:text-zinc-200" />
                 Reset
               </button>
+
               <button
                 onClick={handleRun}
                 disabled={loading}
-                className={`px-6 py-2 rounded-md transition-colors duration-200 flex items-center gap-2 ${
+                className={`flex-1 sm:flex-initial px-6 py-2.5 rounded-xl transition-all font-semibold text-sm active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${
                   loading
-                    ? "bg-blue-800 cursor-not-allowed"
-                    : "bg-blue-600 hover:bg-blue-700"
-                } text-white font-bold shadow-md`}
+                    ? "bg-indigo-600/40 text-indigo-300/80 cursor-wait shadow-none border border-transparent"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/10"
+                }`}
                 title={loading ? "Executing code..." : `Run ${language} code`}
               >
                 {loading ? (
                   <>
-                    <VscSync className="animate-spin text-xl" />
-                    Running...
+                    <VscSync className="animate-spin text-base" />
+                    <span>Running...</span>
                   </>
                 ) : (
                   <>
-                    <VscPlay className="text-xl" />
-                    Run Code
+                    <VscPlay className="text-base" />
+                    <span>Run Code</span>
                   </>
                 )}
               </button>
             </div>
           </div>
-          <Editor
-            value={code}
-            height="calc(100vh - 300px)"
-            theme="dark"
-            extensions={[langExtension]}
-            onChange={handleCodeChange}
-          />
-          <OutputConsole output={output} onClear={handleClearOutput} />
+
+          {/* Code Canvas Viewport Window Wrapper */}
+          <div className="rounded-xl border border-zinc-800/80 overflow-hidden shadow-2xl shadow-black/40 bg-[#1e1e1e]">
+            <Suspense fallback={<CodeEditorSkeleton />}>
+              <CodeEditor
+                height="calc(100vh - 300px)"
+                extensions={[langExtension]}
+                editorInstanceRef={editorInstanceRef}
+                language={language}
+                socket={socket}
+                roomId={roomId}
+                codeRef={codeRef}
+                defaultValue={defaultCodeSnippets[language]}
+              />
+            </Suspense>
+          </div>
+
+          {/* Console Workspace Component Terminal Layer */}
+          <div className="mt-6">
+            <OutputConsole output={output} onClear={handleClearOutput} />
+          </div>
         </div>
       </div>
     </div>

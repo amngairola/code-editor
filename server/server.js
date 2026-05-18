@@ -60,17 +60,21 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Event handler for code changes
-  socket.on("code-change", ({ roomId, code }) => {
-    roomCodeMap[roomId] = code; // Update the code for the room
-    // Broadcast code changes to everyone except the sender
-    socket.to(roomId).emit("code-update", { code });
-  });
+  // // Event handler for code changes
+  // socket.on("code-change", ({ roomId, code }) => {
+  //   roomCodeMap[roomId] = code; // Update the code for the room
+  //   // Broadcast code changes to everyone except the sender
+  //   socket.to(roomId).emit("code-update", { code });
+  // });
 
   // Event handler for synchronizing the output console
   socket.on("output-change", ({ roomId, output }) => {
     // Broadcast the new output to everyone else in the room
     socket.to(roomId).emit("output-update", { output });
+  });
+
+  socket.on("code-delta", ({ roomId, operations }) => {
+    socket.to(roomId).emit("code-delta", { operations });
   });
 
   // Event handler for when a user is disconnecting
