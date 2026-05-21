@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, {
   useEffect,
   useState,
@@ -6,16 +7,26 @@ import React, {
   lazy,
   useMemo,
 } from "react";
+=======
+import React, { useEffect, useState, useRef } from "react";
+>>>>>>> origin/main
 import { toast } from "react-toastify";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 
 // Import custom components
 import Client from "../components/Client";
+<<<<<<< HEAD
 
 import OutputConsole from "../components/OutputConsole";
 
 // // Import CodeMirror language packages
+=======
+import Editor from "../components/Editor";
+import OutputConsole from "../components/OutputConsole";
+
+// Import CodeMirror language packages
+>>>>>>> origin/main
 import { javascript } from "@codemirror/lang-javascript";
 import { java } from "@codemirror/lang-java";
 import { python } from "@codemirror/lang-python";
@@ -23,6 +34,7 @@ import { python } from "@codemirror/lang-python";
 // Import icons for the UI
 import { VscEdit, VscDebugRestart, VscPlay, VscSync } from "react-icons/vsc";
 import axios from "axios";
+<<<<<<< HEAD
 const LeftSIdeBar = lazy(() =>
   import("../components/ParentComponents/LeftSIdeBar")
 );
@@ -32,6 +44,8 @@ import LeftSideBarSkeleton from "../components/LeftSideBarSkeleton";
 const CodeEditor = lazy(() => import("../components/CodeEditor"));
 import CodeEditorSkeleton from "../components/CodeEditorSkeleto";
 import { useDraggableSidebar } from "../useDraggableSidebar";
+=======
+>>>>>>> origin/main
 
 // default code snippet for languages
 const defaultCodeSnippets = {
@@ -42,24 +56,38 @@ const defaultCodeSnippets = {
 
 const EditorPage = () => {
   const socket = useSocket();
+<<<<<<< HEAD
   const codeRef = useRef(defaultCodeSnippets.javascript);
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const editorInstanceRef = useRef(null);
+=======
+  const codeRef = useRef(null);
+  const { roomId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+>>>>>>> origin/main
 
   // State for UI and application logic
   const [clients, setClients] = useState([]);
   const [language, setLanguage] = useState("javascript");
+<<<<<<< HEAD
   // const [code, setCode] = useState(defaultCodeSnippets.javascript);
+=======
+  const [code, setCode] = useState(defaultCodeSnippets.javascript);
+>>>>>>> origin/main
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [langExtension, setLangExtension] = useState(javascript({ jsx: true }));
 
+<<<<<<< HEAD
   const isRemoteUpdate = useRef(false);
 
   const { width, onMouseDown } = useDraggableSidebar({ min: 150, max: 500 });
 
+=======
+>>>>>>> origin/main
   // This  useEffect handles all socket event listeners
   useEffect(() => {
     if (!socket) return;
@@ -68,7 +96,10 @@ const EditorPage = () => {
     const currentUserName =
       location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
 
+<<<<<<< HEAD
     console.log("editor username: ", currentUserName);
+=======
+>>>>>>> origin/main
     // Emit an event to the server to join the room
     socket.emit("join-room", { roomId, userName: currentUserName });
 
@@ -98,6 +129,7 @@ const EditorPage = () => {
     const handleCodeUpdate = ({ code: serverCode }) => {
       // Update code only if it's different to prevent loops
       if (serverCode !== null && serverCode !== codeRef.current) {
+<<<<<<< HEAD
         codeRef.current = serverCode;
 
         if (editorInstanceRef.current) {
@@ -105,22 +137,35 @@ const EditorPage = () => {
           editorInstanceRef.current.setValue(serverCode);
           editorInstanceRef.current.setPosition(pos);
         }
+=======
+        setCode(serverCode);
+>>>>>>> origin/main
       }
     };
     socket.on("code-update", handleCodeUpdate);
 
     // 4. Listen for output console updates from other users
     const handleOutputUpdate = ({ output: serverOutput }) => {
+<<<<<<< HEAD
       isRemoteUpdate.current = true;
       if (serverOutput !== null) {
         setOutput(serverOutput);
       }
       isRemoteUpdate.current = false;
+=======
+      if (serverOutput !== null) {
+        setOutput(serverOutput);
+      }
+>>>>>>> origin/main
     };
     socket.on("output-update", handleOutputUpdate);
 
     // --- CLEANUP ---
+<<<<<<< HEAD
 
+=======
+    // This function runs when the component unmounts to prevent memory leaks
+>>>>>>> origin/main
     return () => {
       socket.off("joined", handleJoined);
       socket.off("disconnected", handleDisconnected);
@@ -129,6 +174,7 @@ const EditorPage = () => {
     };
   }, [socket, roomId, location.state, navigate]);
 
+<<<<<<< HEAD
   // Effect to update editor settings when the language dropdown changes
   useEffect(() => {
     const newCode = defaultCodeSnippets[language] || "";
@@ -138,6 +184,18 @@ const EditorPage = () => {
     if (editorInstanceRef.current) {
       editorInstanceRef.current.setValue(newCode);
     }
+=======
+  // Effect to keep codeRef updated with the latest code state
+  useEffect(() => {
+    codeRef.current = code;
+  }, [code]);
+
+  // Effect to update editor settings when the language dropdown changes
+  useEffect(() => {
+    const newCode = defaultCodeSnippets[language] || "";
+    setCode(newCode); // Set the default code for the new language
+    setOutput(""); // Clear the output console
+>>>>>>> origin/main
 
     // Switch the CodeMirror language extension for syntax highlighting
     switch (language) {
@@ -158,9 +216,30 @@ const EditorPage = () => {
 
   // --- EVENT HANDLERS ---
 
+<<<<<<< HEAD
   const handleCodeChange = (newCode) => {
     codeRef.current = newCode;
     if (!isRemoteUpdate.current && socket) {
+=======
+  const copyId = async () => {
+    try {
+      await navigator.clipboard.writeText(roomId);
+      toast.success("copied ");
+    } catch (err) {
+      toast.error("Failed to copy ");
+      console.error(err);
+    }
+  };
+
+  const handleLeaveRoom = () => {
+    toast.info("You have left the room.");
+    navigate("/");
+  };
+
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+    if (socket) {
+>>>>>>> origin/main
       // Emit the code change to the server
       socket.emit("code-change", { roomId, code: newCode });
     }
@@ -177,12 +256,16 @@ const EditorPage = () => {
 
   const handleReset = () => {
     const defaultCode = defaultCodeSnippets[language];
+<<<<<<< HEAD
     codeRef.current = defaultCode;
 
     if (editorInstanceRef.current) {
       editorInstanceRef.current.setValue(defaultCode);
     }
 
+=======
+    setCode(defaultCode);
+>>>>>>> origin/main
     // Broadcast the reset code to other users
     if (socket) {
       socket.emit("code-change", { roomId, code: defaultCode });
@@ -205,7 +288,10 @@ const EditorPage = () => {
       socket.emit("output-change", { roomId, output: initialOutput });
     }
 
+<<<<<<< HEAD
     const code = codeRef.current;
+=======
+>>>>>>> origin/main
     try {
       // The API call
 
@@ -239,6 +325,7 @@ const EditorPage = () => {
       setLoading(false);
     }
   };
+<<<<<<< HEAD
   const memoizedClients = useMemo(() => clients, [clients]);
   return (
     <div className="min-h-screen bg-[#09090b] text-zinc-200 flex flex-col font-sans antialiased selection:bg-indigo-500/30">
@@ -322,10 +409,96 @@ const EditorPage = () => {
                     ? "bg-indigo-600/40 text-indigo-300/80 cursor-wait shadow-none border border-transparent"
                     : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/10"
                 }`}
+=======
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col">
+      <div className="flex-grow flex">
+        {/* Left Sidebar */}
+        <div className="w-64 bg-gray-800 p-4 flex flex-col justify-between border-r border-gray-700">
+          <div>
+            <h4 className="text-xl font-bold mb-4 text-gray-100">Room ID:</h4>
+            <div className="bg-gray-700 text-gray-300 p-2 rounded-md text-center text-lg font-mono break-all mb-4">
+              {roomId}
+            </div>
+            <h4 className="text-xl font-bold mb-4 text-gray-100 mt-6">
+              Collaborators
+            </h4>
+            <div className="grid grid-cols-2 gap-4">
+              {clients.map((client) => (
+                <Client
+                  key={client.socketId}
+                  socketId={client.socketId}
+                  userName={client.userName}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-auto">
+            <label
+              htmlFor="language-select"
+              className="block text-sm font-medium text-gray-300 mb-2"
+            >
+              Language:
+            </label>
+            <select
+              id="language-select"
+              value={language}
+              onChange={(e) => setLanguage(e.target.value)}
+              className="block w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-white text-sm"
+            >
+              <option value="javascript">JavaScript</option>
+              <option value="python">Python</option>
+              <option value="java">Java</option>
+            </select>
+            <div className="mt-8">
+              <button
+                onClick={copyId}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200 mb-3"
+              >
+                Copy Room ID
+              </button>
+              <button
+                onClick={handleLeaveRoom}
+                className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors duration-200"
+              >
+                Leave Room
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Side: Editor Area */}
+        <div className="flex-grow bg-gray-900 p-4 flex flex-col">
+          <div className="flex justify-between items-center mb-4 pb-2 border-b border-gray-700">
+            <h2 className="text-2xl font-bold text-gray-100 flex items-center gap-2">
+              <VscEdit className="text-purple-400 text-xl" />
+              Code Editor (<span className="text-blue-400">{language}</span>)
+            </h2>
+            <div className="flex gap-3 items-center">
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 font-medium rounded-md transition-colors duration-200 flex items-center gap-1"
+                title={`Reset ${language} code to default`}
+              >
+                <VscDebugRestart className="text-lg" />
+                Reset
+              </button>
+              <button
+                onClick={handleRun}
+                disabled={loading}
+                className={`px-6 py-2 rounded-md transition-colors duration-200 flex items-center gap-2 ${
+                  loading
+                    ? "bg-blue-800 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } text-white font-bold shadow-md`}
+>>>>>>> origin/main
                 title={loading ? "Executing code..." : `Run ${language} code`}
               >
                 {loading ? (
                   <>
+<<<<<<< HEAD
                     <VscSync className="animate-spin text-base" />
                     <span>Running...</span>
                   </>
@@ -333,11 +506,21 @@ const EditorPage = () => {
                   <>
                     <VscPlay className="text-base" />
                     <span>Run Code</span>
+=======
+                    <VscSync className="animate-spin text-xl" />
+                    Running...
+                  </>
+                ) : (
+                  <>
+                    <VscPlay className="text-xl" />
+                    Run Code
+>>>>>>> origin/main
                   </>
                 )}
               </button>
             </div>
           </div>
+<<<<<<< HEAD
 
           {/* Code Canvas Viewport Window Wrapper */}
           <div className="rounded-xl border border-zinc-800/80 overflow-hidden shadow-2xl shadow-black/40 bg-[#1e1e1e]">
@@ -359,6 +542,16 @@ const EditorPage = () => {
           <div className="mt-6">
             <OutputConsole output={output} onClear={handleClearOutput} />
           </div>
+=======
+          <Editor
+            value={code}
+            height="calc(100vh - 300px)"
+            theme="dark"
+            extensions={[langExtension]}
+            onChange={handleCodeChange}
+          />
+          <OutputConsole output={output} onClear={handleClearOutput} />
+>>>>>>> origin/main
         </div>
       </div>
     </div>

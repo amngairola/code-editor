@@ -42,6 +42,7 @@ const HomePage = () => {
   };
 
   return (
+<<<<<<< HEAD
     <div className="relative min-h-screen bg-[#09090b] flex flex-col items-center justify-center px-4 overflow-hidden selection:bg-indigo-500/30 font-sans antialiased">
       {/* Background Decorative Ambient Glows */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-600/5 blur-[120px] pointer-events-none" />
@@ -111,16 +112,65 @@ const HomePage = () => {
                 >
                   create a new room
                 </span>
+=======
+    <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col items-center justify-center">
+      <div className="flex-grow flex items-center justify-center p-4 w-full">
+        <div className="bg-gray-800 rounded-lg shadow-xl p-8 w-full max-w-md border border-gray-700">
+          <h1 className="text-4xl font-bold text-blue-400 text-center mb-2">
+            Code Sync
+          </h1>
+          <p className="text-gray-400 text-center mb-8">
+            Real-time collaborative code editor
+          </p>
+
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={roomId}
+              onChange={(e) => setRoomId(e.target.value)}
+              onKeyUp={handleInputEnter}
+              placeholder="Enter Room ID"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            />
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyUp={handleInputEnter}
+              placeholder="Enter Your Name"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-white"
+            />
+            <button
+              onClick={handleJoinRoom}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-colors duration-200"
+            >
+              Join Room
+            </button>
+            <div className="text-center text-gray-400">
+              <p>
+                If you don't have an invite, then create a{" "}
+                <span
+                  onClick={handleCreateNewRoom}
+                  className="text-blue-400 hover:text-blue-300 font-semibold cursor-pointer underline"
+                >
+                  new room
+                </span>
+                .
+>>>>>>> origin/main
               </p>
             </div>
           </div>
         </div>
       </div>
+<<<<<<< HEAD
 
       {/* Integrated Global System Layout Footer */}
       <div className="w-full z-10">
         <Footer />
       </div>
+=======
+      <Footer />
+>>>>>>> origin/main
     </div>
   );
 };
