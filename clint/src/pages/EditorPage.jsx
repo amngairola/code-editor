@@ -31,6 +31,7 @@ import LeftSideBarSkeleton from "../components/LeftSideBarSkeleton";
 
 const CodeEditor = lazy(() => import("../components/CodeEditor"));
 import CodeEditorSkeleton from "../components/CodeEditorSkeleto";
+import { useDraggableSidebar } from "../useDraggableSidebar";
 
 // default code snippet for languages
 const defaultCodeSnippets = {
@@ -57,6 +58,8 @@ const EditorPage = () => {
 
   const isRemoteUpdate = useRef(false);
 
+  const { width, onMouseDown } = useDraggableSidebar({ min: 150, max: 500 });
+
   // This  useEffect handles all socket event listeners
   useEffect(() => {
     if (!socket) return;
@@ -65,6 +68,7 @@ const EditorPage = () => {
     const currentUserName =
       location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
 
+    console.log("editor username: ", currentUserName);
     // Emit an event to the server to join the room
     socket.emit("join-room", { roomId, userName: currentUserName });
 
@@ -241,12 +245,42 @@ const EditorPage = () => {
       <div className="flex-grow flex overflow-hidden">
         {/* Left Sidebar Layout Frame */}
         <Suspense fallback={<LeftSideBarSkeleton />}>
-          <LeftSIdeBar
-            clients={memoizedClients}
-            language={language}
-            setLanguage={setLanguage}
-          />
+          <aside style={{ width, flexShrink: 0, overflow: "hidden" }}>
+            <LeftSIdeBar
+              width={width}
+              clients={memoizedClients}
+              language={language}
+              setLanguage={setLanguage}
+            />
+          </aside>
         </Suspense>
+
+        {/* the drag handle */}
+        <div
+          onMouseDown={onMouseDown}
+          className="relative group flex items-center justify-center transition-all duration-200 hover:w-[8px]"
+          style={{
+            width: "4px",
+            cursor: "col-resize",
+            zIndex: 40,
+          }}
+        >
+          {/* The Core Structural Line */}
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-zinc-800 group-hover:bg-indigo-500/40 group-active:bg-indigo-500 h-full transition-all duration-150 pointer-events-none" />
+
+          {/* Active Glowing Layer */}
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] bg-indigo-500/0 group-hover:bg-indigo-500/10 group-active:bg-indigo-500/20 h-full blur-[2px] transition-all duration-150 pointer-events-none" />
+
+          {/* Tactile White Gripper Dots (Centered vertically) */}
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex flex-col justify-center gap-1.5 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-150 pointer-events-none">
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+          </div>
+
+          {/* Expanded Invisible Click Target Area */}
+          <div className="absolute top-0 bottom-0 -left-2 -right-2 h-full pointer-events-none" />
+        </div>
 
         {/* Right Side: Editor Workspace Canvas Area */}
         <div className="flex-grow bg-[#09090b] p-6 flex flex-col min-w-0 overflow-y-auto">

@@ -4,12 +4,14 @@ import Client from "../Client";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 
-const LeftSIdeBar = React.memo(({ clients, language, setLanguage }) => {
+const LeftSIdeBar = React.memo(({ width, clients, language, setLanguage }) => {
   const { roomId } = useParams();
 
   console.log(clients, language);
   return (
-    <div className="h-screen w-64 bg-[#0c0c0e] border-r border-zinc-800 p-5 flex flex-col justify-between select-none shrink-0">
+    <div
+      className={`h-screen w-${width} bg-[#0c0c0e] border-r border-zinc-800 p-5 flex flex-col justify-between select-none shrink-0`}
+    >
       <div>
         {/* Room Identity Section */}
         <div className="space-y-2.5">

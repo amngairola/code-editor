@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Editor from "@monaco-editor/react";
-
+import { toast } from "react-toastify";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 const CodeEditor = ({
   defaultValue,
   height,
@@ -12,6 +13,14 @@ const CodeEditor = ({
 }) => {
   const isRemote = useRef(false);
   const monacoRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const location = useLocation();
+  const userName =
+    location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
+
+  console.log("username : ", location.state?.name);
+  const typingTimeout = useRef(null);
+  const [userTyping, setTypingUser] = useState(null);
 
   const handleMount = (editor, monaco) => {
     editorInstanceRef.current = editor;
@@ -33,9 +42,61 @@ const CodeEditor = ({
         roomId,
         operations,
       });
+
+      socket.emit("typing", {
+        roomId,
+        userName,
+      });
     });
 
-    socket.on("code-delta", ({ operations }) => {
+    // const handleDelta = ({ operations }) => {
+    //   console.log("Received payload:", operations);
+    //   if (!operations || !Array.isArray(operations)) {
+    //     console.warn("Received invalid operations:", operations);
+    //     return;
+    //   }
+    //   const editor = editorInstanceRef.current;
+    //   const monaco = monacoRef.current;
+    //   if (!editor || !monaco) return;
+
+    //   isRemote.current = true;
+
+    //   const edits = operations.map((op) => ({
+    //     range: new monaco.Range(
+    //       op.range.startLineNumber,
+    //       op.range.startColumn,
+    //       op.range.endLineNumber,
+    //       op.range.endColumn
+    //     ),
+
+    //     text: op.text,
+    //     forceMoveMarkers: true,
+    //   }));
+
+    //   editor.executeEdits("remote", edits);
+
+    //   const selections = editor.getSelections();
+    //   if (selections) {
+    //     editor.setSelections(selections);
+    //   }
+
+    //   codeRef.current = editor.getValue();
+
+    //   isRemote.current = false;
+    // };
+    // socket.on("code-delta", handleDelta);
+
+    // socket.onAny((event, ...args) => {
+    //   console.log("ANY EVENT:", event, args);
+    // });
+
+    return () => {
+      socket.off("code-delta", handleDelta);
+    };
+  };
+
+  useEffect(() => {
+    const handleDelta = ({ operations }) => {
       console.log("Received payload:", operations);
       if (!operations || !Array.isArray(operations)) {
         console.warn("Received invalid operations:", operations);
@@ -69,12 +130,28 @@ const CodeEditor = ({
       codeRef.current = editor.getValue();
 
       isRemote.current = false;
-    });
+    };
 
-    socket.onAny((event, ...args) => {
-      console.log("ANY EVENT:", event, args);
-    });
-  };
+    const handleTyping = ({ userName }) => {
+      console.log(userName, "is typing...");
+      setTypingUser(userName);
+    };
+
+    socket.on("code-delta", handleDelta);
+
+    socket.on("user-typing", handleTyping);
+
+    return () => {
+      socket.off("code-delta", handleDelta);
+      socket.off("user-typing", handleTyping);
+    };
+  }, [socket]);
+
+  clearTimeout(timeoutRef.current);
+
+  timeoutRef.current = setTimeout(() => {
+    setTypingUser("");
+  }, 800);
 
   useEffect(() => {
     return () => {
@@ -83,23 +160,59 @@ const CodeEditor = ({
   }, [socket]);
 
   return (
-    <Editor
-      height={height}
-      language={language}
-      theme="vs-dark"
-      defaultValue={defaultValue}
-      onMount={handleMount}
-      options={{
-        fontSize: 14,
-        minimap: { enabled: false },
-        wordWrap: "on",
-        scrollBeyondLastLine: false,
-        readOnly: false,
-        lineNumbers: "on", // "on" | "off" | "relative"
-        tabSize: 2,
-        automaticLayout: true, // resizes with container
-      }}
-    />
+    <div className="relative w-full rounded-xl overflow-hidden border border-zinc-800 bg-[#1e1e1e] shadow-2xl group">
+      {/* Monaco Code Stream Viewport Canvas */}
+      <Editor
+        height={height}
+        language={language}
+        theme="vs-dark"
+        defaultValue={defaultValue}
+        onMount={handleMount}
+        options={{
+          fontSize: 14,
+          fontFamily: "'Fira Code', 'Courier New', Courier, monospace",
+          fontLigatures: true,
+          renderLineHighlight: "all",
+          cursorBlinking: "smooth",
+          cursorSmoothCaretAnimation: "on",
+          smoothScrolling: true,
+          padding: { top: 12, bottom: 12 },
+          minimap: { enabled: false },
+          wordWrap: "on",
+          scrollBeyondLastLine: false,
+          readOnly: false,
+          lineNumbers: "on",
+          tabSize: 2,
+          automaticLayout: true,
+        }}
+      />
+
+      {/* Elegant Collaborative Real-time Typing Badge */}
+      {userTyping && (
+        <div className="absolute bottom-4 right-4 z-20 flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 border border-zinc-800 rounded-lg backdrop-blur-md shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200 select-none">
+          {/* Pulsing Presence Indicator Ring */}
+          <span className="relative flex h-2 w-2">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+          </span>
+
+          {/* Active Session Meta String */}
+          <p className="text-[11px] font-semibold text-zinc-300 tracking-wide">
+            <span className="text-indigo-400 font-mono font-bold mr-0.5">
+              {userTyping}
+            </span>{" "}
+            is typing
+          </p>
+
+          {/* CSS Typing Wave Ellipsis Animation dot sequence */}
+          <div className="flex gap-0.5 items-center ml-0.5">
+            <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-1 h-1 bg-zinc-500 rounded-full animate-bounce"></span>
+          </div>
+        </div>
+      )}
+    </div>
   );
 };
 

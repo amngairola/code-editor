@@ -97,6 +97,13 @@ io.on("connection", (socket) => {
     delete userSocketMap[socket.id];
   });
 
+  socket.on("typing", ({ roomId, userName }) => {
+    console.log(userName, "is typing... server");
+    socket.to(roomId).emit("user-typing", {
+      userName,
+    });
+  });
+
   socket.on("disconnect", () => {
     console.log(`[DISCONNECT] User disconnected fully: ${socket.id}`);
   });
