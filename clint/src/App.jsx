@@ -8,6 +8,10 @@ import { ToastContainer } from "react-toastify"; // Import ToastContainer
 import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 import Home from "./pages/Home";
 import { SocketProvider } from "./context/SocketContext";
+<<<<<<< HEAD
+import CustomToastContainer from "./components/CustomToastContainer";
+=======
+>>>>>>> origin/main
 
 const App = () => {
   return (
@@ -17,6 +21,9 @@ const App = () => {
           <Route path="/" element={<Home />} />{" "}
           <Route path="/editor/:roomId" element={<EditorPage />} />{" "}
         </Routes>
+<<<<<<< HEAD
+        <CustomToastContainer />
+=======
         <ToastContainer
           position="top-right"
           autoClose={5000}
@@ -25,6 +32,7 @@ const App = () => {
           closeOnClick
           theme="colored"
         />
+>>>>>>> origin/main
       </SocketProvider>
     </BrowserRouter>
   );

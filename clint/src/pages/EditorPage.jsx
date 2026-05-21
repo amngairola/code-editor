@@ -1,14 +1,32 @@
+<<<<<<< HEAD
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  Suspense,
+  lazy,
+  useMemo,
+} from "react";
+=======
 import React, { useEffect, useState, useRef } from "react";
+>>>>>>> origin/main
 import { toast } from "react-toastify";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 
 // Import custom components
 import Client from "../components/Client";
+<<<<<<< HEAD
+
+import OutputConsole from "../components/OutputConsole";
+
+// // Import CodeMirror language packages
+=======
 import Editor from "../components/Editor";
 import OutputConsole from "../components/OutputConsole";
 
 // Import CodeMirror language packages
+>>>>>>> origin/main
 import { javascript } from "@codemirror/lang-javascript";
 import { java } from "@codemirror/lang-java";
 import { python } from "@codemirror/lang-python";
@@ -16,6 +34,18 @@ import { python } from "@codemirror/lang-python";
 // Import icons for the UI
 import { VscEdit, VscDebugRestart, VscPlay, VscSync } from "react-icons/vsc";
 import axios from "axios";
+<<<<<<< HEAD
+const LeftSIdeBar = lazy(() =>
+  import("../components/ParentComponents/LeftSIdeBar")
+);
+
+import LeftSideBarSkeleton from "../components/LeftSideBarSkeleton";
+
+const CodeEditor = lazy(() => import("../components/CodeEditor"));
+import CodeEditorSkeleton from "../components/CodeEditorSkeleto";
+import { useDraggableSidebar } from "../useDraggableSidebar";
+=======
+>>>>>>> origin/main
 
 // default code snippet for languages
 const defaultCodeSnippets = {
@@ -26,19 +56,38 @@ const defaultCodeSnippets = {
 
 const EditorPage = () => {
   const socket = useSocket();
+<<<<<<< HEAD
+  const codeRef = useRef(defaultCodeSnippets.javascript);
+  const { roomId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const editorInstanceRef = useRef(null);
+=======
   const codeRef = useRef(null);
   const { roomId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
+>>>>>>> origin/main
 
   // State for UI and application logic
   const [clients, setClients] = useState([]);
   const [language, setLanguage] = useState("javascript");
+<<<<<<< HEAD
+  // const [code, setCode] = useState(defaultCodeSnippets.javascript);
+=======
   const [code, setCode] = useState(defaultCodeSnippets.javascript);
+>>>>>>> origin/main
   const [output, setOutput] = useState("");
   const [loading, setLoading] = useState(false);
   const [langExtension, setLangExtension] = useState(javascript({ jsx: true }));
 
+<<<<<<< HEAD
+  const isRemoteUpdate = useRef(false);
+
+  const { width, onMouseDown } = useDraggableSidebar({ min: 150, max: 500 });
+
+=======
+>>>>>>> origin/main
   // This  useEffect handles all socket event listeners
   useEffect(() => {
     if (!socket) return;
@@ -47,6 +96,10 @@ const EditorPage = () => {
     const currentUserName =
       location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
 
+<<<<<<< HEAD
+    console.log("editor username: ", currentUserName);
+=======
+>>>>>>> origin/main
     // Emit an event to the server to join the room
     socket.emit("join-room", { roomId, userName: currentUserName });
 
@@ -76,21 +129,43 @@ const EditorPage = () => {
     const handleCodeUpdate = ({ code: serverCode }) => {
       // Update code only if it's different to prevent loops
       if (serverCode !== null && serverCode !== codeRef.current) {
+<<<<<<< HEAD
+        codeRef.current = serverCode;
+
+        if (editorInstanceRef.current) {
+          const pos = editorInstanceRef.current.getPosition();
+          editorInstanceRef.current.setValue(serverCode);
+          editorInstanceRef.current.setPosition(pos);
+        }
+=======
         setCode(serverCode);
+>>>>>>> origin/main
       }
     };
     socket.on("code-update", handleCodeUpdate);
 
     // 4. Listen for output console updates from other users
     const handleOutputUpdate = ({ output: serverOutput }) => {
+<<<<<<< HEAD
+      isRemoteUpdate.current = true;
       if (serverOutput !== null) {
         setOutput(serverOutput);
       }
+      isRemoteUpdate.current = false;
+=======
+      if (serverOutput !== null) {
+        setOutput(serverOutput);
+      }
+>>>>>>> origin/main
     };
     socket.on("output-update", handleOutputUpdate);
 
     // --- CLEANUP ---
+<<<<<<< HEAD
+
+=======
     // This function runs when the component unmounts to prevent memory leaks
+>>>>>>> origin/main
     return () => {
       socket.off("joined", handleJoined);
       socket.off("disconnected", handleDisconnected);
@@ -99,6 +174,17 @@ const EditorPage = () => {
     };
   }, [socket, roomId, location.state, navigate]);
 
+<<<<<<< HEAD
+  // Effect to update editor settings when the language dropdown changes
+  useEffect(() => {
+    const newCode = defaultCodeSnippets[language] || "";
+    codeRef.current = newCode; // Set the default code for the new language
+    setOutput("");
+
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.setValue(newCode);
+    }
+=======
   // Effect to keep codeRef updated with the latest code state
   useEffect(() => {
     codeRef.current = code;
@@ -109,6 +195,7 @@ const EditorPage = () => {
     const newCode = defaultCodeSnippets[language] || "";
     setCode(newCode); // Set the default code for the new language
     setOutput(""); // Clear the output console
+>>>>>>> origin/main
 
     // Switch the CodeMirror language extension for syntax highlighting
     switch (language) {
@@ -129,6 +216,11 @@ const EditorPage = () => {
 
   // --- EVENT HANDLERS ---
 
+<<<<<<< HEAD
+  const handleCodeChange = (newCode) => {
+    codeRef.current = newCode;
+    if (!isRemoteUpdate.current && socket) {
+=======
   const copyId = async () => {
     try {
       await navigator.clipboard.writeText(roomId);
@@ -147,6 +239,7 @@ const EditorPage = () => {
   const handleCodeChange = (newCode) => {
     setCode(newCode);
     if (socket) {
+>>>>>>> origin/main
       // Emit the code change to the server
       socket.emit("code-change", { roomId, code: newCode });
     }
@@ -163,7 +256,16 @@ const EditorPage = () => {
 
   const handleReset = () => {
     const defaultCode = defaultCodeSnippets[language];
+<<<<<<< HEAD
+    codeRef.current = defaultCode;
+
+    if (editorInstanceRef.current) {
+      editorInstanceRef.current.setValue(defaultCode);
+    }
+
+=======
     setCode(defaultCode);
+>>>>>>> origin/main
     // Broadcast the reset code to other users
     if (socket) {
       socket.emit("code-change", { roomId, code: defaultCode });
@@ -186,6 +288,10 @@ const EditorPage = () => {
       socket.emit("output-change", { roomId, output: initialOutput });
     }
 
+<<<<<<< HEAD
+    const code = codeRef.current;
+=======
+>>>>>>> origin/main
     try {
       // The API call
 
@@ -219,6 +325,91 @@ const EditorPage = () => {
       setLoading(false);
     }
   };
+<<<<<<< HEAD
+  const memoizedClients = useMemo(() => clients, [clients]);
+  return (
+    <div className="min-h-screen bg-[#09090b] text-zinc-200 flex flex-col font-sans antialiased selection:bg-indigo-500/30">
+      <div className="flex-grow flex overflow-hidden">
+        {/* Left Sidebar Layout Frame */}
+        <Suspense fallback={<LeftSideBarSkeleton />}>
+          <aside style={{ width, flexShrink: 0, overflow: "hidden" }}>
+            <LeftSIdeBar
+              width={width}
+              clients={memoizedClients}
+              language={language}
+              setLanguage={setLanguage}
+            />
+          </aside>
+        </Suspense>
+
+        {/* the drag handle */}
+        <div
+          onMouseDown={onMouseDown}
+          className="relative group flex items-center justify-center transition-all duration-200 hover:w-[8px]"
+          style={{
+            width: "4px",
+            cursor: "col-resize",
+            zIndex: 40,
+          }}
+        >
+          {/* The Core Structural Line */}
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[1px] bg-zinc-800 group-hover:bg-indigo-500/40 group-active:bg-indigo-500 h-full transition-all duration-150 pointer-events-none" />
+
+          {/* Active Glowing Layer */}
+          <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-[3px] bg-indigo-500/0 group-hover:bg-indigo-500/10 group-active:bg-indigo-500/20 h-full blur-[2px] transition-all duration-150 pointer-events-none" />
+
+          {/* Tactile White Gripper Dots (Centered vertically) */}
+          <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex flex-col justify-center gap-1.5 opacity-40 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-150 pointer-events-none">
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+            <div className="w-[3px] h-[3px] bg-white rounded-full shadow-sm shadow-black" />
+          </div>
+
+          {/* Expanded Invisible Click Target Area */}
+          <div className="absolute top-0 bottom-0 -left-2 -right-2 h-full pointer-events-none" />
+        </div>
+
+        {/* Right Side: Editor Workspace Canvas Area */}
+        <div className="flex-grow bg-[#09090b] p-6 flex flex-col min-w-0 overflow-y-auto">
+          {/* Workspace Toolbar Header Panel */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-zinc-800/80">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-lg shadow-black/20">
+                <VscEdit className="text-indigo-400 text-lg" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-zinc-100 tracking-tight flex items-center gap-2">
+                  Code Editor
+                </h2>
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500 mt-0.5">
+                  Environment /{" "}
+                  <span className="text-indigo-400 font-mono lower-case">
+                    {language}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Interactive Runtime Controls */}
+            <div className="flex gap-3 items-center w-full sm:w-auto">
+              <button
+                onClick={handleReset}
+                className="flex-1 sm:flex-initial px-4 py-2.5 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-semibold text-sm rounded-xl border border-zinc-800 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                title={`Reset ${language} code to default`}
+              >
+                <VscDebugRestart className="text-base text-zinc-400 group-hover:text-zinc-200" />
+                Reset
+              </button>
+
+              <button
+                onClick={handleRun}
+                disabled={loading}
+                className={`flex-1 sm:flex-initial px-6 py-2.5 rounded-xl transition-all font-semibold text-sm active:scale-[0.98] shadow-lg flex items-center justify-center gap-2 ${
+                  loading
+                    ? "bg-indigo-600/40 text-indigo-300/80 cursor-wait shadow-none border border-transparent"
+                    : "bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/10"
+                }`}
+=======
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 flex flex-col">
@@ -302,10 +493,20 @@ const EditorPage = () => {
                     ? "bg-blue-800 cursor-not-allowed"
                     : "bg-blue-600 hover:bg-blue-700"
                 } text-white font-bold shadow-md`}
+>>>>>>> origin/main
                 title={loading ? "Executing code..." : `Run ${language} code`}
               >
                 {loading ? (
                   <>
+<<<<<<< HEAD
+                    <VscSync className="animate-spin text-base" />
+                    <span>Running...</span>
+                  </>
+                ) : (
+                  <>
+                    <VscPlay className="text-base" />
+                    <span>Run Code</span>
+=======
                     <VscSync className="animate-spin text-xl" />
                     Running...
                   </>
@@ -313,11 +514,35 @@ const EditorPage = () => {
                   <>
                     <VscPlay className="text-xl" />
                     Run Code
+>>>>>>> origin/main
                   </>
                 )}
               </button>
             </div>
           </div>
+<<<<<<< HEAD
+
+          {/* Code Canvas Viewport Window Wrapper */}
+          <div className="rounded-xl border border-zinc-800/80 overflow-hidden shadow-2xl shadow-black/40 bg-[#1e1e1e]">
+            <Suspense fallback={<CodeEditorSkeleton />}>
+              <CodeEditor
+                height="calc(100vh - 300px)"
+                extensions={[langExtension]}
+                editorInstanceRef={editorInstanceRef}
+                language={language}
+                socket={socket}
+                roomId={roomId}
+                codeRef={codeRef}
+                defaultValue={defaultCodeSnippets[language]}
+              />
+            </Suspense>
+          </div>
+
+          {/* Console Workspace Component Terminal Layer */}
+          <div className="mt-6">
+            <OutputConsole output={output} onClear={handleClearOutput} />
+          </div>
+=======
           <Editor
             value={code}
             height="calc(100vh - 300px)"
@@ -326,6 +551,7 @@ const EditorPage = () => {
             onChange={handleCodeChange}
           />
           <OutputConsole output={output} onClear={handleClearOutput} />
+>>>>>>> origin/main
         </div>
       </div>
     </div>

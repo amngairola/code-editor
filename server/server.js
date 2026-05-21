@@ -60,12 +60,21 @@ io.on("connection", (socket) => {
     }
   });
 
+<<<<<<< HEAD
+  // // Event handler for code changes
+  // socket.on("code-change", ({ roomId, code }) => {
+  //   roomCodeMap[roomId] = code; // Update the code for the room
+  //   // Broadcast code changes to everyone except the sender
+  //   socket.to(roomId).emit("code-update", { code });
+  // });
+=======
   // Event handler for code changes
   socket.on("code-change", ({ roomId, code }) => {
     roomCodeMap[roomId] = code; // Update the code for the room
     // Broadcast code changes to everyone except the sender
     socket.to(roomId).emit("code-update", { code });
   });
+>>>>>>> origin/main
 
   // Event handler for synchronizing the output console
   socket.on("output-change", ({ roomId, output }) => {
@@ -73,6 +82,13 @@ io.on("connection", (socket) => {
     socket.to(roomId).emit("output-update", { output });
   });
 
+<<<<<<< HEAD
+  socket.on("code-delta", ({ roomId, operations }) => {
+    socket.to(roomId).emit("code-delta", { operations });
+  });
+
+=======
+>>>>>>> origin/main
   // Event handler for when a user is disconnecting
   socket.on("disconnecting", () => {
     const rooms = [...socket.rooms];
@@ -93,6 +109,16 @@ io.on("connection", (socket) => {
     delete userSocketMap[socket.id];
   });
 
+<<<<<<< HEAD
+  socket.on("typing", ({ roomId, userName }) => {
+    console.log(userName, "is typing... server");
+    socket.to(roomId).emit("user-typing", {
+      userName,
+    });
+  });
+
+=======
+>>>>>>> origin/main
   socket.on("disconnect", () => {
     console.log(`[DISCONNECT] User disconnected fully: ${socket.id}`);
   });
