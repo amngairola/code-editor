@@ -303,7 +303,6 @@ const EditorPage = () => {
               </div>
             </div>
 
-            {/* Interactive Runtime Controls */}
             <div className="flex gap-3 items-center w-full sm:w-auto">
               <button
                 onClick={handleReset}
