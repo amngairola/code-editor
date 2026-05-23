@@ -21,7 +21,7 @@ export const SocketProvider = ({ children }) => {
     });
 
     socket.on("disconnect", (reason) => {
-      console.warn("Socket disconnected:", reason);
+      console.log("Socket disconnected: ", reason);
     });
 
     // Cleanup function to disconnect the socket when the app unmounts

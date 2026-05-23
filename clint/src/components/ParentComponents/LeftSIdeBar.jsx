@@ -7,7 +7,7 @@ import { useParams } from "react-router-dom";
 const LeftSIdeBar = React.memo(({ width, clients, language, setLanguage }) => {
   const { roomId } = useParams();
 
-  console.log(clients, language);
+  // console.log(clients, language);
   return (
     <div
       className={`h-screen w-${width} bg-[#0c0c0e] border-r border-zinc-800 p-5 flex flex-col justify-between select-none shrink-0`}

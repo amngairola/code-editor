@@ -32,6 +32,7 @@ import LeftSideBarSkeleton from "../components/LeftSideBarSkeleton";
 const CodeEditor = lazy(() => import("../components/CodeEditor"));
 import CodeEditorSkeleton from "../components/CodeEditorSkeleto";
 import { useDraggableSidebar } from "../useDraggableSidebar";
+import { AIPanel } from "../services/AIPanel";
 
 // default code snippet for languages
 const defaultCodeSnippets = {
@@ -68,7 +69,7 @@ const EditorPage = () => {
     const currentUserName =
       location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
 
-    console.log("editor username: ", currentUserName);
+    // console.log("editor username: ", currentUserName);
     // Emit an event to the server to join the room
     socket.emit("join-room", { roomId, userName: currentUserName });
 
@@ -337,7 +338,6 @@ const EditorPage = () => {
               </button>
             </div>
           </div>
-
           {/* Code Canvas Viewport Window Wrapper */}
           <div className="rounded-xl border border-zinc-800/80 overflow-hidden shadow-2xl shadow-black/40 bg-[#1e1e1e]">
             <Suspense fallback={<CodeEditorSkeleton />}>
@@ -357,6 +357,21 @@ const EditorPage = () => {
           {/* Console Workspace Component Terminal Layer */}
           <div className="mt-6">
             <OutputConsole output={output} onClear={handleClearOutput} />
+          </div>
+
+          {/* //AI Pannel */}
+          <div className="flex   bg-zinc-950 overflow-hidden">
+            {/* Your Collaborative Monaco Editor Instance View Container */}
+            <div className="flex-1 transition-all duration-300">
+              {/* <MonacoEditor value={code} onChange={setCode} /> */}
+            </div>
+
+            {/* AI Assistant Flyout Layer */}
+            <AIPanel
+              codeRef={codeRef}
+              currentLanguage={language}
+              roomId={roomId}
+            />
           </div>
         </div>
       </div>

@@ -18,7 +18,7 @@ const CodeEditor = ({
   const userName =
     location.state?.name || `Guest_${Math.floor(Math.random() * 100)}`;
 
-  console.log("username : ", location.state?.name);
+  // console.log("username : ", location.state?.name);
   const typingTimeout = useRef(null);
   const [userTyping, setTypingUser] = useState(null);
 
@@ -37,7 +37,7 @@ const CodeEditor = ({
       }));
 
       codeRef.current = editor.getValue();
-      console.log("Emitting operations:", operations);
+      // console.log("Emitting operations:", operations);
       socket.emit("code-delta", {
         roomId,
         operations,
@@ -160,7 +160,10 @@ const CodeEditor = ({
   }, [socket]);
 
   return (
-    <div className="relative w-full rounded-xl overflow-hidden border border-zinc-800 bg-[#1e1e1e] shadow-2xl group">
+    <div className="relative w-full h-full rounded-xl overflow-hidden border border-zinc-800/80 bg-[#1e1e1e] shadow-2xl transition-all duration-300 group focus-within:border-zinc-700/80 focus-within:ring-4 focus-within:ring-indigo-500/5">
+      {/* Subtly animated accent indicator tracking focus activity inside the block */}
+      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-indigo-500/0 via-indigo-500/40 to-indigo-500/0 opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 pointer-events-none z-10" />
+
       {/* Monaco Code Stream Viewport Canvas */}
       <Editor
         height={height}
@@ -170,13 +173,17 @@ const CodeEditor = ({
         onMount={handleMount}
         options={{
           fontSize: 14,
-          fontFamily: "'Fira Code', 'Courier New', Courier, monospace",
+          fontFamily:
+            "'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace",
           fontLigatures: true,
           renderLineHighlight: "all",
           cursorBlinking: "smooth",
           cursorSmoothCaretAnimation: "on",
           smoothScrolling: true,
-          padding: { top: 12, bottom: 12 },
+          padding: {
+            top: 16,
+            bottom: 16,
+          } /* Slightly optimized internal line vertical buffers */,
           minimap: { enabled: false },
           wordWrap: "on",
           scrollBeyondLastLine: false,
