@@ -19,9 +19,9 @@ const App = () => {
           <Route path="/" element={<Home />} />{" "}
           <Route path="/editor/:roomId" element={<EditorPage />} />{" "}
         </Routes>
-<<<<<<< HEAD
+
         <CustomToastContainer />
-=======
+
         <ToastContainer
           position="top-right"
           autoClose={5000}
@@ -30,7 +30,7 @@ const App = () => {
           closeOnClick
           theme="colored"
         />
->>>>>>> origin/main
+
       </SocketProvider>
     </BrowserRouter>
   );
